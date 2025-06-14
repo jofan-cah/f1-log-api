@@ -11,8 +11,8 @@ const createTransactionValidation = [
   body('transaction_type')
     .notEmpty()
     .withMessage('Transaction type is required')
-    .isIn(['check_out', 'check_in', 'transfer', 'maintenance'])
-    .withMessage('Transaction type must be: check_out, check_in, transfer, or maintenance'),
+    .isIn(['check_out', 'check_in', 'repair', 'lost'])
+    .withMessage('Transaction type must be: check_out, check_in, repair, or lost'),
 
   body('reference_no')
     .optional()

@@ -90,7 +90,7 @@ const createTransaction = asyncHandler(async (req, res) => {
   const { transaction_type, reference_no, first_person, second_person, location, transaction_date, notes, items } = req.body;
 
   // Validate transaction type
-  const validTypes = ['check_out', 'check_in', 'transfer', 'maintenance'];
+  const validTypes = ['check_out', 'check_in', 'lost', 'repair'];
   if (!validTypes.includes(transaction_type)) {
     return sendError(res, 'Invalid transaction type', 400);
   }
@@ -156,9 +156,15 @@ const createTransaction = asyncHandler(async (req, res) => {
           status: 'Available',
           condition: item.condition_after || product.condition
         });
-      } else if (transaction_type === 'maintenance') {
+      } else if (transaction_type === 'repair') {
         await product.update({
-          status: 'Maintenance',
+          status: 'repair',
+          last_maintenance_date: new Date()
+        });
+      }
+      else if (transaction_type === 'lost') {
+        await product.update({
+          status: 'lost',
           last_maintenance_date: new Date()
         });
       }
@@ -327,9 +333,15 @@ const addTransactionItem = asyncHandler(async (req, res) => {
       status: 'Available',
       condition: condition_after || product.condition
     });
-  } else if (transaction.transaction_type === 'maintenance') {
+  } else if (transaction.transaction_type === 'repair') {
     await product.update({
-      status: 'Maintenance',
+      status: 'repair',
+      last_maintenance_date: new Date()
+    });
+  }
+   else if (transaction.transaction_type === 'lost') {
+    await product.update({
+      status: 'lost',
       last_maintenance_date: new Date()
     });
   }
@@ -457,8 +469,8 @@ const getTransactionStats = asyncHandler(async (req, res) => {
     Transaction.count({ where: { status: 'closed' } }),
     Transaction.count({ where: { transaction_type: 'check_out' } }),
     Transaction.count({ where: { transaction_type: 'check_in' } }),
-    Transaction.count({ where: { transaction_type: 'transfer' } }),
-    Transaction.count({ where: { transaction_type: 'maintenance' } }),
+    Transaction.count({ where: { transaction_type: 'lost' } }),
+    Transaction.count({ where: { transaction_type: 'repair' } }),
     // Recent transactions
     Transaction.findAll({
       attributes: ['id', 'transaction_type', 'reference_no', 'transaction_date', 'status'],

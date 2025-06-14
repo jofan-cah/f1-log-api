@@ -23,7 +23,7 @@ const USER_LEVEL_DESCRIPTIONS = {
 const PRODUCT_STATUS = {
   AVAILABLE: 'Available',
   IN_USE: 'In Use',
-  MAINTENANCE: 'Maintenance',
+  MAINTENANCE:'repair',
   DAMAGED: 'Damaged',
   DISPOSED: 'Disposed'
 };
@@ -41,8 +41,8 @@ const PRODUCT_CONDITIONS = {
 const TRANSACTION_TYPES = {
   CHECK_OUT: 'check_out',
   CHECK_IN: 'check_in',
-  TRANSFER: 'transfer',
-  MAINTENANCE: 'maintenance'
+  TRANSFER: 'lost',
+  MAINTENANCE:'repair'
 };
 
 // Transaction status
@@ -58,7 +58,7 @@ const STOCK_MOVEMENT_TYPES = {
   IN: 'in',
   OUT: 'out',
   ADJUSTMENT: 'adjustment',
-  TRANSFER: 'transfer'
+  TRANSFER: 'lost'
 };
 
 // Purchase receipt status

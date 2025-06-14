@@ -38,8 +38,8 @@ const transactionReportValidation = [
   
   query('transaction_type')
     .optional()
-    .isIn(['check_out', 'check_in', 'transfer', 'maintenance'])
-    .withMessage('Transaction type must be: check_out, check_in, transfer, or maintenance'),
+    .isIn(['check_out', 'check_in', 'lost', 'repair'])
+    .withMessage('Transaction type must be: check_out, check_in, lost, or repair'),
   
   query('location')
     .optional()

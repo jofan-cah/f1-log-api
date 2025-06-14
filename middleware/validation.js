@@ -188,7 +188,7 @@ const supplierValidation = {
 // Transaction validation rules
 const transactionValidation = {
   create: [
-    body('transaction_type').isIn(['check_out', 'check_in', 'transfer', 'maintenance']).withMessage('Invalid transaction type'),
+    body('transaction_type').isIn(['check_out', 'check_in', 'lost', 'repair']).withMessage('Invalid transaction type'),
     commonValidations.optionalString('reference_no', 50),
     commonValidations.requiredString('first_person', 2, 100),
     commonValidations.optionalString('second_person', 100),

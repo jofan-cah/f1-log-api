@@ -1,0 +1,2375 @@
+{
+  "info": {
+    "name": "🏢 ISP Inventory Management API",
+    "description": "Complete API testing collection for ISP Inventory Management System with authentication and comprehensive CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string",
+      "description": "Base API URL"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Authentication Token"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Refresh Token"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string",
+      "description": "Current User ID"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string",
+      "description": "Test Category ID"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string",
+      "description": "Test Product ID"
+    },
+    {
+      "key": "supplier_id",
+      "value": "",
+      "type": "string",
+      "description": "Test Supplier ID"
+    },
+    {
+      "key": "transaction_id",
+      "value": "",
+      "type": "string",
+      "description": "Test Transaction ID"
+    },
+    {
+      "key": "purchase_id",
+      "value": "",
+      "type": "string",
+      "description": "Test Purchase Receipt ID"
+    },
+    {
+      "key": "new_user_id",
+      "value": "",
+      "type": "string",
+      "description": "Newly Created User ID"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Authentication and user profile management endpoints",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.data.token);",
+                  "        pm.collectionVariables.set('user_id', response.data.user.user_id);",
+                  "        if (response.data.refreshToken) {",
+                  "            pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
+                  "        }",
+                  "        console.log('🔑 Token saved:', response.data.token.substring(0, 20) + '...');",
+                  "        console.log('👤 User ID:', response.data.user.user_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate user and get access token"
+          }
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Profile retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Profile data exists', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.not.be.undefined;",
+                  "    pm.expect(response.data.user_id).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Get current user profile"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Updated Admin Name\",\n  \"email\": \"admin@company.com\",\n  \"phone\": \"081234567890\",\n  \"department\": \"IT Department\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Update current user profile"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "change-password"]
+            },
+            "description": "Change user password"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.data.token);",
+                  "        console.log('🔄 Token refreshed');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh-token"]
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/validate-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "validate-token"]
+            },
+            "description": "Validate current access token"
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@company.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/request-password-reset",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "request-password-reset"]
+            },
+            "description": "Request password reset email"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_here\",\n  \"newPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "description": "Reset password using reset token"
+          }
+        },
+        {
+          "name": "Check Username Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/check-username/testuser",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "check-username", "testuser"]
+            },
+            "description": "Check if username is available"
+          }
+        },
+        {
+          "name": "Check Email Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/check-email/test@example.com",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "check-email", "test@example.com"]
+            },
+            "description": "Check if email is available"
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Logout successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "// Clear auth tokens after logout",
+                  "pm.collectionVariables.set('auth_token', '');",
+                  "pm.collectionVariables.set('refresh_token', '');",
+                  "console.log('🚪 Logged out - tokens cleared');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📂 Categories",
+      "description": "Product categories and stock management",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Categories retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Categories data exists', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    if (response.data.length > 0) {",
+                  "        pm.collectionVariables.set('category_id', response.data[0].id);",
+                  "        console.log('📂 Category ID saved:', response.data[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all categories with pagination and search"
+          }
+        },
+        {
+          "name": "Get Categories with Stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/with-stock",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "with-stock"]
+            },
+            "description": "Get categories that track stock"
+          }
+        },
+        {
+          "name": "Get Low Stock Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/low-stock",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "low-stock"]
+            },
+            "description": "Get categories with low stock"
+          }
+        },
+        {
+          "name": "Get Category Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/stats",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "stats"]
+            },
+            "description": "Get category statistics"
+          }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}"]
+            },
+            "description": "Get category by ID"
+          }
+        },
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Category created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('category_id', response.data.id);",
+                  "        console.log('📂 New Category ID:', response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Network Equipment\",\n  \"code\": \"NET\",\n  \"has_stock\": true,\n  \"min_stock\": 10,\n  \"max_stock\": 100,\n  \"current_stock\": 50,\n  \"unit\": \"pcs\",\n  \"reorder_point\": 15,\n  \"notes\": \"Network equipment category for routers, switches, etc.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            },
+            "description": "Create new category"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Network Equipment\",\n  \"min_stock\": 15,\n  \"max_stock\": 150,\n  \"reorder_point\": 20,\n  \"notes\": \"Updated network equipment category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}"]
+            },
+            "description": "Update category"
+          }
+        },
+        {
+          "name": "Update Category Stock",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 5,\n  \"movement_type\": \"in\",\n  \"notes\": \"Stock adjustment - received new items\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}", "stock"]
+            },
+            "description": "Update category stock (manual adjustment)"
+          }
+        },
+        {
+          "name": "Bulk Stock Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adjustments\": [\n    {\n      \"categoryId\": \"{{category_id}}\",\n      \"quantity\": 10,\n      \"notes\": \"Bulk adjustment - stock increase\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/bulk-adjustment",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "bulk-adjustment"]
+            },
+            "description": "Perform bulk stock adjustments"
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}"]
+            },
+            "description": "Delete category"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Products",
+      "description": "Product inventory management",
+      "item": [
+        {
+          "name": "Get All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Products retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Products data exists', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    if (response.data.length > 0) {",
+                  "        pm.collectionVariables.set('product_id', response.data[0].product_id);",
+                  "        console.log('📦 Product ID saved:', response.data[0].product_id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all products with pagination and search"
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/search?q=router&status=Available",
+              "host": ["{{base_url}}"],
+              "path": ["products", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "router"
+                },
+                {
+                  "key": "status",
+                  "value": "Available"
+                }
+              ]
+            },
+            "description": "Search products with advanced filters"
+          }
+        },
+        {
+          "name": "Get Product Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/stats",
+              "host": ["{{base_url}}"],
+              "path": ["products", "stats"]
+            },
+            "description": "Get product statistics"
+          }
+        },
+        {
+          "name": "Get Products by Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/category/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "category", "{{category_id}}"]
+            },
+            "description": "Get products by category"
+          }
+        },
+        {
+          "name": "Get Products by Location",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/location/Server Room A",
+              "host": ["{{base_url}}"],
+              "path": ["products", "location", "Server Room A"]
+            },
+            "description": "Get products by location"
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            },
+            "description": "Get product by ID"
+          }
+        },
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Product created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.product_id) {",
+                  "        pm.collectionVariables.set('product_id', response.data.product_id);",
+                  "        console.log('📦 New Product ID:', response.data.product_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": \"{{category_id}}\",\n  \"brand\": \"Cisco\",\n  \"model\": \"2960X-24TS-L\",\n  \"serial_number\": \"FCW2140L0AB\",\n  \"origin\": \"Singapore\",\n  \"description\": \"24-port Gigabit Ethernet Switch\",\n  \"location\": \"Server Room A\",\n  \"status\": \"Available\",\n  \"condition\": \"New\",\n  \"quantity\": 1,\n  \"purchase_date\": \"2024-01-15\",\n  \"purchase_price\": 2500000,\n  \"warranty_expiry\": \"2027-01-15\",\n  \"notes\": \"New switch for network expansion\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            },
+            "description": "Create new product"
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Updated Cisco\",\n  \"model\": \"2960X-24TS-L-V2\",\n  \"location\": \"Server Room B\",\n  \"condition\": \"Good\",\n  \"purchase_price\": 2750000,\n  \"notes\": \"Updated network switch information\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            },
+            "description": "Update product"
+          }
+        },
+        {
+          "name": "Update Product Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Use\",\n  \"notes\": \"Deployed to production network\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "status"]
+            },
+            "description": "Update product status"
+          }
+        },
+        {
+          "name": "Generate Product QR Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/qr-code",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "qr-code"]
+            },
+            "description": "Generate QR code for product"
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            },
+            "description": "Delete product"
+          }
+        },
+          {
+      "name": "🆕 Custom Print Products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Print data generated', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Print data structure is correct', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.data).to.have.property('print_data');",
+              "    pm.expect(response.data.print_data).to.be.an('array');",
+              "    if (response.data.print_data.length > 0) {",
+              "        const firstItem = response.data.print_data[0];",
+              "        pm.expect(firstItem).to.have.property('qr_data');",
+              "        pm.expect(firstItem).to.have.property('label_data');",
+              "        console.log('🖨️ Print data ready for FE generation');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_ids\": [\n    \"{{product_id}}\",\n    \"NET001\",\n    \"NET002\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products/print/custom",
+          "host": ["{{base_url}}"],
+          "path": ["products", "print", "custom"]
+        },
+        "description": "Get selected products data for custom printing (QR/barcode generation at frontend)"
+      }
+    },
+    {
+      "name": "🆕 Create Breakdown Transaction",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Breakdown transaction created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.created_products) {",
+              "        console.log('🔧 Created breakdown products:', response.data.created_products);",
+              "        // Save first breakdown product ID for testing",
+              "        if (response.data.created_products.length > 0) {",
+              "            pm.collectionVariables.set('breakdown_product_id', response.data.created_products[0].product_id);",
+              "        }",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"breakdown_items\": [\n    {\n      \"description\": \"Piece A - Left section\",\n      \"condition\": \"Good\",\n      \"quantity\": 1,\n      \"notes\": \"Left portion after breakdown\"\n    },\n    {\n      \"description\": \"Piece B - Right section\",\n      \"condition\": \"Good\",\n      \"quantity\": 1,\n      \"notes\": \"Right portion after breakdown\"\n    }\n  ],\n  \"location\": \"Workshop Area\",\n  \"notes\": \"Breaking down large item into smaller components\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products/breakdown",
+          "host": ["{{base_url}}"],
+          "path": ["products", "breakdown"]
+        },
+        "description": "Create breakdown transaction to split product into smaller pieces"
+      }
+    },
+    {
+      "name": "🆕 Get Product Breakdown History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/products/{{product_id}}/breakdown-history",
+          "host": ["{{base_url}}"],
+          "path": ["products", "{{product_id}}", "breakdown-history"]
+        },
+        "description": "Get breakdown history for a product (parent/child relationships)"
+      }
+    },
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/products/{{product_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["products", "{{product_id}}"]
+        },
+        "description": "Delete product"
+      }
+    }
+      ]
+    },
+    {
+      "name": "📊 Stocks",
+      "description": "Stock movements and inventory tracking",
+      "item": [
+        {
+          "name": "Get Stock Movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["stocks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all stock movements with pagination & filtering"
+          }
+        },
+        {
+          "name": "Get Stock Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/summary",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "summary"]
+            },
+            "description": "Get stock summary by categories"
+          }
+        },
+        {
+          "name": "Get Recent Movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/recent?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "recent"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get recent stock movements"
+          }
+        },
+        {
+          "name": "Get Stock Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/analytics?period=30",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "analytics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Get stock analytics and trends"
+          }
+        },
+        {
+          "name": "Get Low Stock Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "alerts"]
+            },
+            "description": "Get low stock alerts"
+          }
+        },
+        {
+          "name": "Get Stock Movement by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/1",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "1"]
+            },
+            "description": "Get specific stock movement by ID"
+          }
+        },
+        {
+          "name": "Create Stock Movement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": \"{{category_id}}\",\n  \"movement_type\": \"in\",\n  \"quantity\": 10,\n  \"notes\": \"Manual stock adjustment - received new items\",\n  \"reference_type\": \"manual\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/stocks/movements",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "movements"]
+            },
+            "description": "Create manual stock movement"
+          }
+        },
+        {
+          "name": "Bulk Stock Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adjustments\": [\n    {\n      \"category_id\": \"{{category_id}}\",\n      \"quantity\": -5,\n      \"notes\": \"Bulk adjustment - stock decrease for maintenance\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/stocks/bulk-adjustment",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "bulk-adjustment"]
+            },
+            "description": "Perform bulk stock adjustments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Dashboard",
+      "description": "Dashboard data and analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/overview",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "overview"]
+            },
+            "description": "Get main dashboard overview with key metrics and recent activities"
+          }
+        },
+        {
+          "name": "Get Stock Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/stock-status",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "stock-status"]
+            },
+            "description": "Get detailed stock status and inventory levels"
+          }
+        },
+        {
+          "name": "Get Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/analytics?period=30",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "analytics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Get analytics data for charts and trends"
+          }
+        },
+        {
+          "name": "Get Dashboard Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "alerts"]
+            },
+            "description": "Get system alerts and notifications"
+          }
+        },
+        {
+          "name": "Get Quick Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/quick-stats",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "quick-stats"]
+            },
+            "description": "Get quick statistics for dashboard widgets"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Purchases",
+      "description": "Purchase receipts and procurement",
+      "item": [
+        {
+          "name": "Get Purchase Receipts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Purchase receipts retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.length > 0) {",
+                  "        pm.collectionVariables.set('purchase_id', response.data[0].id);",
+                  "        console.log('🛒 Purchase ID saved:', response.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["purchases"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all purchase receipts with pagination and search"
+          }
+        },
+        {
+          "name": "Get Purchase Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/stats",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "stats"]
+            },
+            "description": "Get purchase statistics"
+          }
+        },
+        {
+          "name": "Get Purchase Receipt by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/{{purchase_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "{{purchase_id}}"]
+            },
+            "description": "Get purchase receipt by ID"
+          }
+        },
+        {
+          "name": "Create Purchase Receipt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Purchase receipt created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('purchase_id', response.data.id);",
+                  "        console.log('🛒 New Purchase ID:', response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"po_number\": \"PO-2024-001\",\n  \"supplier_id\": \"{{supplier_id}}\",\n  \"receipt_date\": \"2024-06-12\",\n  \"status\": \"completed\",\n  \"notes\": \"Network equipment purchase\",\n  \"items\": [\n    {\n      \"category_id\": \"{{category_id}}\",\n      \"quantity\": 5,\n      \"unit_price\": 2500000,\n      \"condition\": \"New\",\n      \"notes\": \"Cisco switches\",\n      \"generate_products\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchases",
+              "host": ["{{base_url}}"],
+              "path": ["purchases"]
+            },
+            "description": "Create new purchase receipt"
+          }
+        },
+        {
+          "name": "Update Purchase Receipt",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receipt_number\": \"RCP-2024-001-UPD\",\n  \"po_number\": \"PO-2024-001-UPDATED\",\n  \"status\": \"completed\",\n  \"notes\": \"Updated purchase receipt information\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchases/{{purchase_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "{{purchase_id}}"]
+            },
+            "description": "Update purchase receipt"
+          }
+        },
+        {
+          "name": "Add Item to Purchase Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": \"{{category_id}}\",\n  \"quantity\": 2,\n  \"unit_price\": 1500000,\n  \"condition\": \"New\",\n  \"notes\": \"Additional routers\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchases/{{purchase_id}}/items",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "{{purchase_id}}", "items"]
+            },
+            "description": "Add item to purchase receipt"
+          }
+        },
+        {
+          "name": "Remove Item from Purchase Receipt",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/{{purchase_id}}/items/1",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "{{purchase_id}}", "items", "1"]
+            },
+            "description": "Remove item from purchase receipt"
+          }
+        },
+        {
+          "name": "Delete Purchase Receipt",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/{{purchase_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "{{purchase_id}}"]
+            },
+            "description": "Delete purchase receipt"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 Reports",
+      "description": "Various business reports",
+      "item": [
+        {
+          "name": "Stock Report - Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/stock?format=summary",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "stock"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "summary"
+                }
+              ]
+            },
+            "description": "Generate stock report (summary format)"
+          }
+        },
+        {
+          "name": "Stock Report - Detailed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/stock?format=detailed&status=Available",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "stock"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "detailed"
+                },
+                {
+                  "key": "status",
+                  "value": "Available"
+                }
+              ]
+            },
+            "description": "Generate detailed stock report"
+          }
+        },
+        {
+          "name": "Stock Report - By Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/stock?category_id={{category_id}}&format=detailed",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "stock"],
+              "query": [
+                {
+                  "key": "category_id",
+                  "value": "{{category_id}}"
+                },
+                {
+                  "key": "format",
+                  "value": "detailed"
+                }
+              ]
+            },
+            "description": "Generate stock report by category"
+          }
+        },
+        {
+          "name": "Transaction Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/transactions?period=this_month&transaction_type=check_out",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "transactions"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_month"
+                },
+                {
+                  "key": "transaction_type",
+                  "value": "check_out"
+                }
+              ]
+            },
+            "description": "Generate transaction report"
+          }
+        },
+        {
+          "name": "Transaction Report - All Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/transactions?period=this_week",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "transactions"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_week"
+                }
+              ]
+            },
+            "description": "Generate transaction report for all types"
+          }
+        },
+        {
+          "name": "Financial Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/financial?period=this_quarter",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "financial"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_quarter"
+                }
+              ]
+            },
+            "description": "Generate financial report (purchases and expenses)"
+          }
+        },
+        {
+          "name": "Asset Utilization Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/asset-utilization?period=this_month",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "asset-utilization"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "this_month"
+                }
+              ]
+            },
+            "description": "Generate asset utilization report"
+          }
+        },
+        {
+          "name": "Asset Utilization Report - By Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/asset-utilization?category_id={{category_id}}&period=this_quarter",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "asset-utilization"],
+              "query": [
+                {
+                  "key": "category_id",
+                  "value": "{{category_id}}"
+                },
+                {
+                  "key": "period",
+                  "value": "this_quarter"
+                }
+              ]
+            },
+            "description": "Generate asset utilization report by category"
+          }
+        },
+        {
+          "name": "Maintenance Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/maintenance?status=due",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "maintenance"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "due"
+                }
+              ]
+            },
+            "description": "Generate maintenance report"
+          }
+        },
+        {
+          "name": "Maintenance Report - Overdue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/maintenance?status=overdue",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "maintenance"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "overdue"
+                }
+              ]
+            },
+            "description": "Generate overdue maintenance report"
+          }
+        },
+        {
+          "name": "Custom Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"report_type\": \"monthly_inventory\",\n  \"metrics\": [\"product_count\", \"transaction_count\", \"purchase_amount\"],\n  \"date_from\": \"2024-01-01\",\n  \"date_to\": \"2024-06-30\",\n  \"categories\": [\"{{category_id}}\"],\n  \"statuses\": [\"Available\", \"In Use\"],\n  \"locations\": [\"Server Room A\", \"Warehouse\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reports/custom",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "custom"]
+            },
+            "description": "Generate custom report with flexible parameters"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Suppliers",
+      "description": "Supplier management",
+      "item": [
+        {
+          "name": "Get All Suppliers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Suppliers retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Suppliers data exists', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    if (response.data.length > 0) {",
+                  "        pm.collectionVariables.set('supplier_id', response.data[0].id);",
+                  "        console.log('🏪 Supplier ID saved:', response.data[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all suppliers with pagination and search"
+          }
+        },
+        {
+          "name": "Search Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/search?q=Tech",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Tech"
+                }
+              ]
+            },
+            "description": "Search suppliers"
+          }
+        },
+        {
+          "name": "Get Supplier Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/stats",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "stats"]
+            },
+            "description": "Get supplier statistics"
+          }
+        },
+        {
+          "name": "Get Supplier by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            },
+            "description": "Get supplier by ID"
+          }
+        },
+        {
+          "name": "Get Supplier Purchase History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}/purchases",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}", "purchases"]
+            },
+            "description": "Get supplier purchase history"
+          }
+        },
+        {
+          "name": "Get Supplier Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}", "products"]
+            },
+            "description": "Get supplier products"
+          }
+        },
+        {
+          "name": "Get Supplier Performance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}/performance",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}", "performance"]
+            },
+            "description": "Get supplier performance metrics"
+          }
+        },   {
+          "name": "Create Supplier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Supplier created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('supplier_id', response.data.id);",
+                  "        console.log('🏪 New Supplier ID:', response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tech Solutions Inc\",\n  \"address\": \"Jl. Sudirman No. 123, Jakarta\",\n  \"contact_person\": \"John Doe\",\n  \"phone\": \"021-1234567\",\n  \"email\": \"sales@techsolutions.com\",\n  \"notes\": \"Reliable supplier for network equipment\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/suppliers",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers"]
+            },
+            "description": "Create new supplier"
+          }
+        },
+        {
+          "name": "Update Supplier",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Tech Solutions Inc\",\n  \"address\": \"Jl. Sudirman No. 456, Jakarta\",\n  \"contact_person\": \"Jane Doe\",\n  \"phone\": \"021-7654321\",\n  \"email\": \"updated-sales@techsolutions.com\",\n  \"notes\": \"Updated supplier information\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            },
+            "description": "Update supplier"
+          }
+        },
+        {
+          "name": "Delete Supplier",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/suppliers/{{supplier_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["suppliers", "{{supplier_id}}"]
+            },
+            "description": "Delete supplier"
+          }
+        }
+      ]
+    },
+     {
+      "name": "👤 User Levels",
+      "item": [
+        {
+          "name": "Get All User Levels",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ User levels data exists', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "    if (response.data.length > 0) {",
+                  "        pm.collectionVariables.set('user_level_id', response.data[0].id);",
+                  "        console.log('👤 User Level ID saved:', response.data[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all user levels with pagination"
+          }
+        },
+        {
+          "name": "Search User Levels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels/search?q=admin",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "admin"
+                }
+              ]
+            },
+            "description": "Search user levels"
+          }
+        },
+        {
+          "name": "Get Available User Levels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels/available",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "available"]
+            },
+            "description": "Get available user levels for dropdowns"
+          }
+        },
+        {
+          "name": "Get User Level Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels/stats",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "stats"]
+            },
+            "description": "Get user level statistics"
+          }
+        },
+        {
+          "name": "Get User Level by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels/admin",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "admin"]
+            },
+            "description": "Get user level by ID"
+          }
+        },
+        {
+          "name": "Create User Level",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('user_level_id', response.data.id);",
+                  "        console.log('👤 New user level created:', response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"supervisor\",\n  \"level_name\": \"Supervisor\",\n  \"description\": \"Supervisor level with limited management access\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user-levels",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels"]
+            },
+            "description": "Create new user level"
+          }
+        },
+        {
+          "name": "Update User Level",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level_name\": \"Senior Supervisor\",\n  \"description\": \"Updated supervisor level description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user-levels/supervisor",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "supervisor"]
+            },
+            "description": "Update user level"
+          }
+        },
+        {
+          "name": "Delete User Level",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-levels/supervisor",
+              "host": ["{{base_url}}"],
+              "path": ["user-levels", "supervisor"]
+            },
+            "description": "Delete user level"
+          }
+        }]}
+ 
+  
+]
+}

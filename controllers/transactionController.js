@@ -1,4 +1,4 @@
-  const { Transaction, TransactionItem, Product, Category } = require('../models');
+const { Transaction, TransactionItem, Product, Category } = require('../models');
 const { sendSuccess, sendError, sendCreated, sendUpdated, sendDeleted, sendNotFound, sendPaginated } = require('../utils/response');
 const { buildSequelizeQuery } = require('../utils/pagination');
 const { asyncHandler } = require('../middleware/errorHandler');
@@ -29,7 +29,7 @@ const getTransactions = asyncHandler(async (req, res) => {
           {
             model: Product,
             as: 'product',
-            attributes: ['product_id', 'brand', 'model'],
+            attributes: ['product_id', 'brand', 'model', 'ticketing_id', 'is_linked_to_ticketing'],
             include: [
               {
                 model: Category,
@@ -85,12 +85,29 @@ const getTransactionById = asyncHandler(async (req, res) => {
   sendSuccess(res, 'Transaction retrieved successfully', transaction);
 });
 
-// Create new transaction
+// Create new transaction dengan ticket support
 const createTransaction = asyncHandler(async (req, res) => {
-  const { transaction_type, reference_no, first_person, second_person, location, transaction_date, notes, items } = req.body;
+  const { 
+    transaction_type, 
+    reference_no, 
+    first_person, 
+    second_person, 
+    location, 
+    transaction_date, 
+    notes, 
+    items, 
+    selected_ticket,
+    ticket_assignments 
+  } = req.body;
+
+  console.log('🔄 Creating transaction with ticket data:', {
+    transaction_type,
+    selected_ticket,
+    ticket_assignments: ticket_assignments ? Object.keys(ticket_assignments).length : 0
+  });
 
   // Validate transaction type
-  const validTypes = ['check_out', 'check_in', 'lost', 'repair'];
+  const validTypes = ['check_out', 'check_in', 'transfer', 'maintenance', 'repair', 'lost'];
   if (!validTypes.includes(transaction_type)) {
     return sendError(res, 'Invalid transaction type', 400);
   }
@@ -133,6 +150,7 @@ const createTransaction = asyncHandler(async (req, res) => {
         return sendError(res, `Product ${item.product_id} not found`, 404);
       }
 
+      // Create transaction item
       await TransactionItem.create({
         transaction_id: transaction.id,
         product_id: item.product_id,
@@ -145,29 +163,49 @@ const createTransaction = asyncHandler(async (req, res) => {
         status: 'processed'
       });
 
-      // Update product status based on transaction type
+      // Update product status
+      const productUpdates = {};
+      
       if (transaction_type === 'check_out') {
-        await product.update({
-          status: 'In Use',
-          location: location
-        });
+        productUpdates.status = 'In Use';
+        productUpdates.location = location;
+        
+        // Update ticket info - simple logic
+        if (selected_ticket) {
+          // Pakai selected_ticket untuk semua produk
+          productUpdates.ticketing_id = selected_ticket;
+          productUpdates.is_linked_to_ticketing = 1;
+          console.log(`🎫 Product ${item.product_id} linked to ticket: ${selected_ticket}`);
+        } else if (ticket_assignments && ticket_assignments[item.product_id]) {
+          // Pakai ticket assignment per produk
+          productUpdates.ticketing_id = ticket_assignments[item.product_id];
+          productUpdates.is_linked_to_ticketing = 1;
+          console.log(`🎫 Product ${item.product_id} linked to ticket: ${ticket_assignments[item.product_id]}`);
+        }
+        
       } else if (transaction_type === 'check_in') {
-        await product.update({
-          status: 'Available',
-          condition: item.condition_after || product.condition
-        });
+        productUpdates.status = 'Available';
+        productUpdates.condition = item.condition_after || product.condition;
+        
+        // Clear ticket saat check in
+        productUpdates.ticketing_id = null;
+        productUpdates.is_linked_to_ticketing = 0;
+        console.log(`🧹 Product ${item.product_id} ticket cleared on check-in`);
+        
       } else if (transaction_type === 'repair') {
-        await product.update({
-          status: 'repair',
-          last_maintenance_date: new Date()
-        });
+        productUpdates.status = 'Repair';
+        productUpdates.last_maintenance_date = new Date();
+      } else if (transaction_type === 'lost') {
+        productUpdates.status = 'Lost';
+        productUpdates.last_maintenance_date = new Date();
+      } else if (transaction_type === 'maintenance') {
+        productUpdates.status = 'Under Maintenance';
+        productUpdates.last_maintenance_date = new Date();
+      } else if (transaction_type === 'transfer') {
+        productUpdates.location = location;
       }
-      else if (transaction_type === 'lost') {
-        await product.update({
-          status: 'lost',
-          last_maintenance_date: new Date()
-        });
-      }
+
+      await product.update(productUpdates);
     }
   }
 
@@ -193,6 +231,7 @@ const createTransaction = asyncHandler(async (req, res) => {
     ]
   });
 
+  console.log('✅ Transaction created successfully');
   sendCreated(res, 'Transaction created successfully', createdTransaction);
 });
 
@@ -262,13 +301,17 @@ const deleteTransaction = asyncHandler(async (req, res) => {
     return sendError(res, 'Cannot delete closed transaction', 400);
   }
 
-  // Revert product statuses if necessary
+  // Revert product statuses dan clear tickets
   if (transaction.items && transaction.items.length > 0) {
     for (const item of transaction.items) {
       const product = await Product.findByPk(item.product_id);
       if (product && transaction.transaction_type === 'check_out') {
-        // Revert to Available status
-        await product.update({ status: 'Available' });
+        // Revert to Available dan clear ticket
+        await product.update({ 
+          status: 'Available',
+          ticketing_id: null,
+          is_linked_to_ticketing: 0
+        });
       }
     }
   }
@@ -322,7 +365,7 @@ const addTransactionItem = asyncHandler(async (req, res) => {
     status: 'processed'
   });
 
-  // Update product status based on transaction type
+  // Update product status
   if (transaction.transaction_type === 'check_out') {
     await product.update({
       status: 'In Use',
@@ -331,17 +374,18 @@ const addTransactionItem = asyncHandler(async (req, res) => {
   } else if (transaction.transaction_type === 'check_in') {
     await product.update({
       status: 'Available',
-      condition: condition_after || product.condition
+      condition: condition_after || product.condition,
+      ticketing_id: null,
+      is_linked_to_ticketing: 0
     });
   } else if (transaction.transaction_type === 'repair') {
     await product.update({
-      status: 'repair',
+      status: 'Repair',
       last_maintenance_date: new Date()
     });
-  }
-   else if (transaction.transaction_type === 'lost') {
+  } else if (transaction.transaction_type === 'lost') {
     await product.update({
-      status: 'lost',
+      status: 'Lost',
       last_maintenance_date: new Date()
     });
   }
@@ -395,9 +439,13 @@ const removeTransactionItem = asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Transaction item not found');
   }
 
-  // Revert product status if necessary
+  // Revert product status dan clear ticket
   if (transaction.transaction_type === 'check_out') {
-    await transactionItem.product.update({ status: 'Available' });
+    await transactionItem.product.update({ 
+      status: 'Available',
+      ticketing_id: null,
+      is_linked_to_ticketing: 0
+    });
   }
 
   await transactionItem.destroy();
@@ -461,16 +509,22 @@ const generateTransactionQRCode = asyncHandler(async (req, res) => {
   }
 });
 
-// Get transaction statistics
+// Get transaction statistics dengan ticket info
 const getTransactionStats = asyncHandler(async (req, res) => {
   const stats = await Promise.all([
     Transaction.count(),
     Transaction.count({ where: { status: 'open' } }),
     Transaction.count({ where: { status: 'closed' } }),
+    Transaction.count({ where: { status: 'pending' } }),
     Transaction.count({ where: { transaction_type: 'check_out' } }),
     Transaction.count({ where: { transaction_type: 'check_in' } }),
-    Transaction.count({ where: { transaction_type: 'lost' } }),
+    Transaction.count({ where: { transaction_type: 'transfer' } }),
+    Transaction.count({ where: { transaction_type: 'maintenance' } }),
     Transaction.count({ where: { transaction_type: 'repair' } }),
+    Transaction.count({ where: { transaction_type: 'lost' } }),
+    // Products dengan ticket
+    Product.count({ where: { is_linked_to_ticketing: 1 } }),
+    Product.count({ where: { ticketing_id: { [Op.ne]: null } } }),
     // Recent transactions
     Transaction.findAll({
       attributes: ['id', 'transaction_type', 'reference_no', 'transaction_date', 'status'],
@@ -494,16 +548,23 @@ const getTransactionStats = asyncHandler(async (req, res) => {
     total: stats[0],
     byStatus: {
       open: stats[1],
-      closed: stats[2]
+      closed: stats[2],
+      pending: stats[3]
     },
     byType: {
-      check_out: stats[3],
-      check_in: stats[4],
-      transfer: stats[5],
-      maintenance: stats[6]
+      check_out: stats[4],
+      check_in: stats[5],
+      transfer: stats[6],
+      maintenance: stats[7],
+      repair: stats[8],
+      lost: stats[9]
     },
-    recent: stats[7],
-    byLocation: stats[8]
+    ticket_integration: {
+      products_with_tickets: stats[10],
+      active_ticket_assignments: stats[11]
+    },
+    recent: stats[12],
+    byLocation: stats[13]
   };
 
   sendSuccess(res, 'Transaction statistics retrieved successfully', transactionStats);

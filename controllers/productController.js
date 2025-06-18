@@ -99,6 +99,7 @@ const getProducts = asyncHandler(async (req, res) => {
     allowedFilters: {
       category_id: 'category_id',
       supplier_id: 'supplier_id',
+      po_number: 'po_number',
       status: 'status',
       condition: 'condition',
       location: {
